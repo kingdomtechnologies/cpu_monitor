@@ -24,8 +24,8 @@ class Node:
   def __init__(self, name, pid):
     self.name = name
     self.proc = psutil.Process(pid)
-    self.cpu_publisher = rospy.Publisher(ns_join("~", name[1:], "cpu"), Float32, queue_size=20)
-    self.mem_publisher = rospy.Publisher(ns_join("~", name[1:], "mem"), UInt64, queue_size=20)
+    self.cpu_publisher = rospy.Publisher(ns_join("~", name[1:], "cpu"), Float32, queue_size=20, latch=True)
+    self.mem_publisher = rospy.Publisher(ns_join("~", name[1:], "mem"), UInt64, queue_size=20, latch=True)
 
   def publish(self):
     self.cpu_publisher.publish(Float32(self.proc.cpu_percent()))
@@ -45,7 +45,7 @@ if __name__ == "__main__":
   node_map = {}
   ignored_nodes = set()
 
-  cpu_publish = rospy.Publisher("~total_cpu", Float32, queue_size=20)
+  cpu_publish = rospy.Publisher("~total_cpu", Float32, queue_size=20, latch=True)
 
   mem_topics = ["available", "used", "free", "active", "inactive", "buffers", "cached", "shared", "slab"]
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
   mem_publishers = []
   for mem_topic in mem_topics:
     mem_publishers.append(rospy.Publisher("~total_%s_mem" % mem_topic,
-                                          UInt64, queue_size=20))
+                                          UInt64, queue_size=20, latch=True))
 
   while not rospy.is_shutdown():
     for node in rosnode.get_node_names():
